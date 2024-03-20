@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity 0.8.24;
 
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {PriceConverter} from "./PriceConverter.sol";
@@ -41,9 +41,10 @@ contract FundMe {
     }
 
     function withdraw() public onlyOwner {
+        uint256 fundersLength = s_funders.length;
         for (
             uint256 funderIndex = 0;
-            funderIndex < s_funders.length;
+            funderIndex < fundersLength;
             funderIndex++
         ) {
             address funder = s_funders[funderIndex];

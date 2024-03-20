@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.19;
+pragma solidity 0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
 import {FundMe} from "../../src/FundMe.sol";
@@ -13,6 +13,7 @@ contract FundMeTest is Test {
 
     uint256 constant SEND_VALUE = 10e18;
     uint256 constant STARTING_BALANCE = 100e18;
+    uint256 constant GAS_PRICE = 1;
 
     function setUp() external {
         DeployFundMe deployFundMe = new DeployFundMe();
@@ -31,6 +32,8 @@ contract FundMeTest is Test {
     }
 
     function testOwnerIsMsgSender() public {
+        console.log(msg.sender);
+        console.log(fundMe.getOwner());
         assertEq(fundMe.getOwner(), msg.sender);
     }
 
@@ -61,12 +64,16 @@ contract FundMeTest is Test {
     }
 
     function testWithdrawWithASingleFunder() public funded {
+        //Arrange
         uint256 startingOwnerBalance = fundMe.getOwner().balance;
         uint256 startingFundMeBalance = address(fundMe).balance;
+
+        //Act
 
         vm.prank(fundMe.getOwner());
         fundMe.withdraw();
 
+        //Accert
         uint256 endingOwnerBalance = fundMe.getOwner().balance;
         uint256 endingFundMeBalance = address(fundMe).balance;
 
@@ -88,9 +95,18 @@ contract FundMeTest is Test {
         uint256 startingOwnerBalance = fundMe.getOwner().balance;
         uint256 startingFundMeBalance = address(fundMe).balance;
 
+        uint256 gasStart = gasleft();
+        console.log("gas start: ", gasStart);
+        vm.txGasPrice(GAS_PRICE);
+
         vm.startPrank(fundMe.getOwner());
         fundMe.withdraw();
         vm.stopPrank();
+
+        uint256 gasEnd = gasleft();
+        console.log("gas end: ", gasEnd);
+        uint256 gasUsed = (gasStart - gasEnd) * tx.gasprice;
+        console.log("gas used: ", gasUsed);
 
         assertEq(address(fundMe).balance, 0);
         assertEq(
