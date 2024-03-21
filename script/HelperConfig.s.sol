@@ -18,16 +18,43 @@ contract HelperConfig is Script {
     constructor() {
         if (block.chainid == 11155111) {
             activeNetworkConfig = getSepholiaEthConfig();
+        } else if (block.chainid == 421614) {
+            activeNetworkConfig = getSepoliaArbConfig();
+        } else if (block.chainid == 42161) {
+            activeNetworkConfig = getMainnetArbConfig();
+        } else if (block.chainid == 1) {
+            activeNetworkConfig = getMainnetEthConfig();
         } else {
             activeNetworkConfig = getOrCreateAnvilEthConfig();
         }
     }
 
     function getSepholiaEthConfig() public pure returns (NetworkConfig memory) {
-        NetworkConfig memory sepoliaConfig = NetworkConfig({
+        NetworkConfig memory sepoliaEthConfig = NetworkConfig({
             priceFeed: 0x694AA1769357215DE4FAC081bf1f309aDC325306
         });
-        return sepoliaConfig;
+        return sepoliaEthConfig;
+    }
+
+    function getSepoliaArbConfig() public pure returns (NetworkConfig memory) {
+        NetworkConfig memory sepoliaArbConfig = NetworkConfig({
+            priceFeed: 0xd30e2101a97dcbAeBCBC04F14C3f624E67A35165
+        });
+        return sepoliaArbConfig;
+    }
+
+    function getMainnetArbConfig() public pure returns (NetworkConfig memory) {
+        NetworkConfig memory mainnetArbConfig = NetworkConfig({
+            priceFeed: 0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612
+        });
+        return mainnetArbConfig;
+    }
+
+    function getMainnetEthConfig() public pure returns (NetworkConfig memory) {
+        NetworkConfig memory mainnetEthConfig = NetworkConfig({
+            priceFeed: 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
+        });
+        return mainnetEthConfig;
     }
 
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
