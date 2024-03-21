@@ -4,10 +4,15 @@ pragma solidity 0.8.24;
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {PriceConverter} from "./PriceConverter.sol";
 
-error FundMe__NotOwner();
-
 contract FundMe {
     using PriceConverter for uint256;
+
+    error FundMe__NotOwner();
+    error FundMe__NotEnoughEth();
+    error FundMe__FailWithdraw();
+
+    event Funded(address indexed sender, uint256 indexed amount);
+    event Withdraw(uint256 indexed amount);
 
     mapping(address => uint256) private s_addressToAmountFunded;
     address[] private s_funders;
@@ -22,13 +27,14 @@ contract FundMe {
     }
 
     function fund() public payable {
-        require(
-            msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD,
-            "You need to spend more ETH!"
-        );
+        if (msg.value.getConversionRate(s_priceFeed) < MINIMUM_USD) {
+            revert FundMe__NotEnoughEth();
+        }
 
         s_addressToAmountFunded[msg.sender] += msg.value;
         s_funders.push(msg.sender);
+
+        emit Funded(msg.sender, msg.value);
     }
 
     function getVersion() public view returns (uint256) {
@@ -52,10 +58,13 @@ contract FundMe {
         }
         s_funders = new address[](0);
 
-        (bool callSuccess, ) = payable(msg.sender).call{
-            value: address(this).balance
-        }("");
-        require(callSuccess, "Call failed");
+        uint256 amount = address(this).balance;
+        (bool callSuccess, ) = payable(msg.sender).call{value: amount}("");
+        if (!callSuccess) {
+            revert FundMe__FailWithdraw();
+        }
+
+        emit Withdraw(amount);
     }
 
     fallback() external payable {
