@@ -56,6 +56,7 @@ contract FundMe {
             address funder = s_funders[funderIndex];
             s_addressToAmountFunded[funder] = 0;
         }
+        delete s_funders;
         s_funders = new address[](0);
 
         uint256 amount = address(this).balance;
@@ -89,5 +90,9 @@ contract FundMe {
 
     function getOwner() external view returns (address) {
         return i_owner;
+    }
+
+    function getLengthOfFunders() external view returns (uint256) {
+        return s_funders.length;
     }
 }

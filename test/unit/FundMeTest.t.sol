@@ -3,6 +3,7 @@
 pragma solidity 0.8.24;
 
 import {Test, console} from "forge-std/Test.sol";
+import {Vm} from "forge-std/Vm.sol";
 import {FundMe} from "../../src/FundMe.sol";
 import {DeployFundMe} from "../../script/DeployFundMe.s.sol";
 
@@ -113,5 +114,24 @@ contract FundMeTest is Test {
             startingOwnerBalance + startingFundMeBalance,
             fundMe.getOwner().balance
         );
+    }
+
+    function testNotFundersAfterWithdraw() external funded {
+        vm.prank(fundMe.getOwner());
+        fundMe.withdraw();
+
+        assertEq(fundMe.getLengthOfFunders(), 0);
+    }
+
+    function testCallErrorFunction() external {
+        vm.recordLogs();
+        vm.prank(USER);
+        (bool s, ) = address(fundMe).call{value: 1e18}(
+            abi.encodeWithSignature("someFunction(uint256)", 5)
+        );
+        require(s);
+
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        assertEq(entries[0].topics[0], keccak256("Funded(address,uint256)"));
     }
 }
