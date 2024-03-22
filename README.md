@@ -58,6 +58,14 @@ make fork-test_mainnet-eth
 make fork-test_mainnet-arb
 ```
 
+To view the test coverage, utilize the following command:
+
+```bash
+forge coverage
+```
+
+![test_coverage](./test_coverage.png)
+
 
 5. You can generate two types of reports:  `gas report` and `coverage report`
 

@@ -16,3 +16,4 @@ docs/
 broadcast/
 lib/
 lcov.info
+coverage_report/
