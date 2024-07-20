@@ -10,9 +10,16 @@ library PriceConverter {
     ) internal view returns (uint256) {
         // Sepolia ETH / USD Address
         // https://docs.chain.link/data-feeds/price-feeds/addresses
-        (, int256 answer, , , ) = priceFeed.latestRoundData();
+        (
+            /* uint80 roundID */,
+            int answer,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = priceFeed.latestRoundData();
         // ETH/USD rate in 18 digit
-        return uint256(answer * 10000000000);
+        uint8 dec = priceFeed.decimals();
+        return uint256(answer) * 10 ** (18 - dec);
     }
 
     function getConversionRate(
@@ -20,8 +27,8 @@ library PriceConverter {
         AggregatorV3Interface priceFeed
     ) internal view returns (uint256) {
         uint256 ethPrice = getPrice(priceFeed);
-        uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1000000000000000000;
+
         // the actual ETH/USD conversion rate, after adjusting the extra 0s.
-        return ethAmountInUsd;
+        return (ethPrice * ethAmount) / 1e18;
     }
 }
